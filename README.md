@@ -1,7 +1,9 @@
 Logging InfluxDB Exporter
 ===============================================
 
-This Caddy Module allows to write your logs directly into a InfluxDB. 
+This Caddy Module allows to write your logs directly into a InfluxDB.
+
+You can use placeholders like `{request_host}` in the tag value. Note these placeholders are not the default caddy placeholders like in the http module. Rather they reference values from the log.
 
 ## Install
 

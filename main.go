@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/caddyserver/caddy/v2"
@@ -119,9 +120,21 @@ func (prom *InfluxWriter) Write(p []byte) (n int, err error) {
 	fields := map[string]interface{}{}
 	flatten(f, fields, "")
 
+	tags := map[string]string{}
+	for key, element := range prom.tags {
+		val := element
+		if strings.HasPrefix(element, "{") && strings.HasSuffix(element, "}") {
+			if v, ok := fields[element[1:len(element)-1]]; ok {
+				val = v.(string)
+			}
+		}
+
+		tags[key] = val
+	}
+
 	point := influxdb2.NewPoint(
 		prom.measurement,
-		prom.tags,
+		tags,
 		fields,
 		time.Now())
 	prom.writeAPI.WritePoint(point)

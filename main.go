@@ -125,7 +125,17 @@ func (prom *InfluxWriter) Write(p []byte) (n int, err error) {
 		val := element
 		if strings.HasPrefix(element, "{") && strings.HasSuffix(element, "}") {
 			if v, ok := fields[element[1:len(element)-1]]; ok {
-				val = v.(string)
+				switch x := v.(type) {
+				case string:
+					val = x
+				default:
+					b, err := json.Marshal(x)
+					if err != nil {
+						prom.logger.Error("Marshal failed on log", zap.Error((err)))
+					}
+
+					val = string(b)
+				}
 			}
 		}
 

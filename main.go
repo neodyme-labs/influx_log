@@ -112,8 +112,11 @@ type InfluxWriter struct {
 }
 
 func (prom *InfluxWriter) Write(p []byte) (n int, err error) {
+	//[date, status, logger, type, log]
+	args := strings.SplitN(string(p), "\t", 5)
+
 	f := map[string]interface{}{}
-	if err := json.Unmarshal(p, &f); err != nil {
+	if err := json.Unmarshal([]byte(args[4]), &f); err != nil {
 		prom.logger.Error("Unmarshal failed on log", zap.Error((err)))
 	}
 

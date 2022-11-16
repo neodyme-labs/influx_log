@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/caddyserver/caddy/v2"
+	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"go.uber.org/zap"
@@ -42,6 +43,63 @@ func (l *InfluxLog) String() string {
 
 func (l *InfluxLog) WriterKey() string {
 	return "influx_log"
+}
+
+func (l *InfluxLog) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
+	// Consumes the option name
+	if !d.NextArg() {
+		return d.ArgErr()
+	}
+
+	for nesting := d.Nesting(); d.NextBlock(nesting); {
+		switch d.Val() {
+		case "host":
+			if !d.NextArg() {
+				return d.ArgErr()
+			}
+
+			l.Host = d.Val()
+		case "token":
+			if !d.NextArg() {
+				return d.ArgErr()
+			}
+
+			l.Token = d.Val()
+
+		case "org":
+			if !d.NextArg() {
+				return d.ArgErr()
+			}
+
+			l.Org = d.Val()
+		case "bucket":
+			if !d.NextArg() {
+				return d.ArgErr()
+			}
+
+			l.Bucket = d.Val()
+		case "measurement":
+			if !d.NextArg() {
+				return d.ArgErr()
+			}
+
+			l.Measurement = d.Val()
+		case "tags":
+			tags := map[string]string{}
+			for nesting_tags := d.Nesting(); d.NextBlock(nesting_tags); {
+				key := d.Val()
+
+				if !d.NextArg() {
+					return d.ArgErr()
+				}
+
+				tags[key] = d.Val()
+			}
+			l.Tags = tags
+		}
+	}
+
+	return nil
 }
 
 func (l *InfluxLog) OpenWriter() (io.WriteCloser, error) {
@@ -84,7 +142,7 @@ func (l *InfluxLog) Validate() error {
 	}
 
 	if l.Tags == nil {
-		return fmt.Errorf("NO Tags SET")
+		l.Tags = map[string]string{}
 	}
 
 	return nil
@@ -175,7 +233,8 @@ func (prom *InfluxWriter) Open(i *InfluxLog) error {
 
 // Interface guards.
 var (
-	_ caddy.Provisioner  = (*InfluxLog)(nil)
-	_ caddy.Validator    = (*InfluxLog)(nil)
-	_ caddy.WriterOpener = (*InfluxLog)(nil)
+	_ caddy.Provisioner     = (*InfluxLog)(nil)
+	_ caddy.Validator       = (*InfluxLog)(nil)
+	_ caddy.WriterOpener    = (*InfluxLog)(nil)
+	_ caddyfile.Unmarshaler = (*InfluxLog)(nil)
 )

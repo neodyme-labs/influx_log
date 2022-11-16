@@ -18,3 +18,89 @@ Then build Caddy with this Go module plugged in. For example:
 ```shell
 $ xcaddy build --with github.com/neodyme-labs/influx_log
 ```
+
+# Usage
+
+You can use this plugin with either a caddy.json or a Caddyfile here is an example for both:
+
+## Caddyfile
+```
+127.0.0.1 {
+	root * example
+	file_server
+	log {
+		output influx_log {
+			token <token>
+			org my-org
+			bucket my-bucket
+			measurement l1
+			tags {
+				hostname {request_host}
+			}
+			host http://localhost:8086
+		}
+	}
+}
+
+```
+
+## caddy.json
+```json
+{
+    "logging": {
+        "logs": {
+            "default": {
+                "exclude": [
+                    "http.log.access"
+                ]
+            },
+            "log0": {
+                "writer": {
+                    "bucket": "my-bucket",
+                    "host": "http://127.0.0.1:8086",
+                    "measurement": "l1",
+                    "org": "my-org",
+                    "output": "influx_log",
+                    "tags": {
+                        "hostname": "{request_host}"
+                    },
+                    "token": "<token>"
+                },
+                "include": [
+                    "http.log.access"
+                ]
+            }
+        }
+    },
+    "apps": {
+        "http": {
+            "servers": {
+                "srv0": {
+                    "listen": [
+                        ":443"
+                    ],
+                    "routes": [
+                        {
+                            "match": [
+                                {
+                                    "host": [
+                                        "127.0.0.1"
+                                    ]
+                                }
+                            ],
+                            "handle": [
+                                {
+                                    "handler": "file_server",
+                                    "root": "example"
+                                }
+                            ]
+                        }
+                    ],
+                    "logs": {}
+                }
+            }
+        }
+    }
+}
+
+```

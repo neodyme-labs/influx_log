@@ -21,6 +21,7 @@ $ xcaddy build --with github.com/neodyme-labs/influx_log
 
 # Usage
 
+Make sure you set the encoder as json.
 You can use this plugin with either a caddy.json or a Caddyfile here is an example for both:
 
 ## Caddyfile
@@ -29,6 +30,7 @@ You can use this plugin with either a caddy.json or a Caddyfile here is an examp
 	root * example
 	file_server
 	log {
+		format json
 		output influx_log {
 			token <token>
 			org my-org
@@ -41,7 +43,6 @@ You can use this plugin with either a caddy.json or a Caddyfile here is an examp
 		}
 	}
 }
-
 ```
 
 ## caddy.json
@@ -55,6 +56,9 @@ You can use this plugin with either a caddy.json or a Caddyfile here is an examp
                 ]
             },
             "log0": {
+                "encoder": {
+                    "format": "json"
+                },
                 "writer": {
                     "bucket": "my-bucket",
                     "host": "http://127.0.0.1:8086",
@@ -102,5 +106,4 @@ You can use this plugin with either a caddy.json or a Caddyfile here is an examp
         }
     }
 }
-
 ```

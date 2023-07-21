@@ -12,7 +12,7 @@
             inherit system;
             overlays = builtins.attrValues self.overlays;
           };
-          packages = with pkgs; [ go influxdb2 ];
+          packages = with pkgs; [ go_1_18 influxdb2 xcaddy ];
         in
         rec {
           devShells.default = pkgs.mkShell
@@ -108,9 +108,8 @@
 
                   CONFIG_PATH="$(mktemp -d)"
 
-                  pushd xcaddy
-                  ${pkgs.go}/bin/go build
-                  popd
+                  xcaddy version
+                  xcaddy build --with github.com/neodyme-labs/influx_log=.
 
                   ${pkgs.tmux}/bin/tmux new-session -s development -d
                   ${pkgs.tmux}/bin/tmux split-window -h
@@ -128,7 +127,7 @@
                     --configs-path "$CONFIG_PATH/configs" \
                     --force
 
-                  ${pkgs.tmux}/bin/tmux send-keys -t ":0.0" "./xcaddy/caddy run --config ${caddyfile}" Enter
+                  ${pkgs.tmux}/bin/tmux send-keys -t ":0.0" "./caddy run --config ${caddyfile}" Enter
                   ${pkgs.tmux}/bin/tmux attach -t "development"
                 '';
               };
